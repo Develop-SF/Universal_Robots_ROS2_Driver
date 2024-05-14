@@ -46,9 +46,11 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "use_fake_hardware",
-            default_value="false",
-            description="Start robot with fake hardware mirroring command to its states.",
+            "hardware_type",
+            default_value="ros2",
+            choices=["ros2", "isaac", "ros1", "fake"],
+            description="Choose the correct hardware. fake means start robot with fake hardware mirroring command to its states."
+            "ros2 means use ros2 driver, isaac and ros1 will run a topic based ros2 control to pass the command and state.",
         )
     )
     declared_arguments.append(
@@ -56,7 +58,7 @@ def generate_launch_description():
             "fake_sensor_commands",
             default_value="false",
             description="Enable fake command interfaces for sensors used for simple simulations. "
-            "Used only if 'use_fake_hardware' parameter is true.",
+            "Used only if 'hardware_type' parameter is 'fake'.",
         )
     )
     declared_arguments.append(
@@ -82,7 +84,7 @@ def generate_launch_description():
 
     # Initialize Arguments
     robot_ip = LaunchConfiguration("robot_ip")
-    use_fake_hardware = LaunchConfiguration("use_fake_hardware")
+    hardware_type = LaunchConfiguration("hardware_type")
     fake_sensor_commands = LaunchConfiguration("fake_sensor_commands")
     initial_joint_controller = LaunchConfiguration("initial_joint_controller")
     activate_joint_controller = LaunchConfiguration("activate_joint_controller")
@@ -92,7 +94,7 @@ def generate_launch_description():
         launch_arguments={
             "ur_type": "ur10e",
             "robot_ip": robot_ip,
-            "use_fake_hardware": use_fake_hardware,
+            "hardware_type": hardware_type,
             "fake_sensor_commands": fake_sensor_commands,
             "initial_joint_controller": initial_joint_controller,
             "activate_joint_controller": activate_joint_controller,

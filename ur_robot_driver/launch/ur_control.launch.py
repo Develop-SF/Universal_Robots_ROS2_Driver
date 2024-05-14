@@ -52,7 +52,7 @@ def launch_setup(context, *args, **kwargs):
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
     tf_prefix = LaunchConfiguration("tf_prefix")
-    use_fake_hardware = LaunchConfiguration("use_fake_hardware")
+    hardware_type = LaunchConfiguration("hardware_type")
     fake_sensor_commands = LaunchConfiguration("fake_sensor_commands")
     controller_spawner_timeout = LaunchConfiguration("controller_spawner_timeout")
     initial_joint_controller = LaunchConfiguration("initial_joint_controller")
@@ -142,8 +142,8 @@ def launch_setup(context, *args, **kwargs):
             "tf_prefix:=",
             tf_prefix,
             " ",
-            "use_fake_hardware:=",
-            use_fake_hardware,
+            "hardware_type:=",
+            hardware_type,
             " ",
             "fake_sensor_commands:=",
             fake_sensor_commands,
@@ -223,7 +223,7 @@ def launch_setup(context, *args, **kwargs):
             ParameterFile(initial_joint_controllers, allow_substs=True),
         ],
         output="screen",
-        condition=IfCondition(use_fake_hardware),
+        condition=(hardware_type != "ros2"),
     )
 
     ur_control_node = Node(
@@ -235,12 +235,12 @@ def launch_setup(context, *args, **kwargs):
             ParameterFile(initial_joint_controllers, allow_substs=True),
         ],
         output="screen",
-        condition=UnlessCondition(use_fake_hardware),
+        condition=(hardware_type == "ros2"),
     )
 
     dashboard_client_node = Node(
         package="ur_robot_driver",
-        condition=IfCondition(launch_dashboard_client) and UnlessCondition(use_fake_hardware),
+        condition=IfCondition(launch_dashboard_client) and (hardware_type == "ros2"),
         executable="dashboard_client",
         name="dashboard_client",
         output="screen",
@@ -276,7 +276,7 @@ def launch_setup(context, *args, **kwargs):
         name="controller_stopper",
         output="screen",
         emulate_tty=True,
-        condition=UnlessCondition(use_fake_hardware),
+        condition=(hardware_type == "ros2"),
         parameters=[
             {"headless_mode": headless_mode},
             {"joint_controller_active": activate_joint_controller},
@@ -364,15 +364,15 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_start = [
         control_node,
-        ur_control_node,
-        dashboard_client_node,
-        tool_communication_node,
-        controller_stopper_node,
-        urscript_interface,
-        robot_state_publisher_node,
-        rviz_node,
-        initial_joint_controller_spawner_stopped,
-        initial_joint_controller_spawner_started,
+        #ur_control_node,
+        #dashboard_client_node,
+        #tool_communication_node,
+        #controller_stopper_node,
+        #urscript_interface,
+        #robot_state_publisher_node,
+        #rviz_node,
+        #initial_joint_controller_spawner_stopped,
+        #initial_joint_controller_spawner_started,
     ] + controller_spawners
 
     return nodes_to_start
@@ -456,9 +456,11 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "use_fake_hardware",
-            default_value="false",
-            description="Start robot with fake hardware mirroring command to its states.",
+            "hardware_type",
+            default_value="ros2",
+            choices=["ros2", "isaac", "ros1", "fake"],
+            description="Choose the correct hardware. fake means start robot with fake hardware mirroring command to its states."
+            "ros2 means use ros2 driver, isaac and ros1 will run a topic based ros2 control to pass the command and state.",
         )
     )
     declared_arguments.append(
@@ -466,7 +468,7 @@ def generate_launch_description():
             "fake_sensor_commands",
             default_value="false",
             description="Enable fake command interfaces for sensors used for simple simulations. "
-            "Used only if 'use_fake_hardware' parameter is true.",
+            "Used only if 'hardware_type' parameter is fake.",
         )
     )
     declared_arguments.append(
