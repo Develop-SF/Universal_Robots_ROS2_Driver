@@ -223,7 +223,7 @@ def launch_setup(context, *args, **kwargs):
             ParameterFile(initial_joint_controllers, allow_substs=True),
         ],
         output="screen",
-        condition=(hardware_type != "ros2"),
+        condition=IfCondition('true' if hardware_type != "ros2" else 'false'),
     )
 
     ur_control_node = Node(
@@ -235,12 +235,12 @@ def launch_setup(context, *args, **kwargs):
             ParameterFile(initial_joint_controllers, allow_substs=True),
         ],
         output="screen",
-        condition=(hardware_type == "ros2"),
+        condition=IfCondition('true' if hardware_type == "ros2" else 'false'),
     )
 
     dashboard_client_node = Node(
         package="ur_robot_driver",
-        condition=IfCondition(launch_dashboard_client) and (hardware_type == "ros2"),
+        condition=IfCondition(launch_dashboard_client) and IfCondition('true' if hardware_type == "ros2" else 'false'),
         executable="dashboard_client",
         name="dashboard_client",
         output="screen",
@@ -276,7 +276,7 @@ def launch_setup(context, *args, **kwargs):
         name="controller_stopper",
         output="screen",
         emulate_tty=True,
-        condition=(hardware_type == "ros2"),
+        condition=IfCondition('true' if hardware_type == "ros2" else 'false'),
         parameters=[
             {"headless_mode": headless_mode},
             {"joint_controller_active": activate_joint_controller},
@@ -364,15 +364,15 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_start = [
         control_node,
-        #ur_control_node,
-        #dashboard_client_node,
-        #tool_communication_node,
-        #controller_stopper_node,
-        #urscript_interface,
-        #robot_state_publisher_node,
-        #rviz_node,
-        #initial_joint_controller_spawner_stopped,
-        #initial_joint_controller_spawner_started,
+        ur_control_node,
+        dashboard_client_node,
+        tool_communication_node,
+        controller_stopper_node,
+        urscript_interface,
+        robot_state_publisher_node,
+        rviz_node,
+        initial_joint_controller_spawner_stopped,
+        initial_joint_controller_spawner_started,
     ] + controller_spawners
 
     return nodes_to_start
