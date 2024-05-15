@@ -322,14 +322,16 @@ def launch_setup(context, *args, **kwargs):
             + inactive_flags
             + controllers,
         )
-
-    controllers_active = [
-        "joint_state_broadcaster",
-        "io_and_status_controller",
-        "speed_scaling_state_broadcaster",
-        "force_torque_sensor_broadcaster",
-    ]
+    controllers_active = ["joint_state_broadcaster"]
     controllers_inactive = ["forward_position_controller"]
+    if hardware_type in ['ros2', 'fake']:
+        controllers_active.append("io_and_status_controller")
+        controllers_active.append("speed_scaling_state_broadcaster")
+        controllers_active.append("force_torque_sensor_broadcaster")
+    else:
+        controllers_inactive.append("io_and_status_controller")
+        controllers_inactive.append("speed_scaling_state_broadcaster")
+        controllers_inactive.append("force_torque_sensor_broadcaster")
 
     controller_spawners = [controller_spawner(controllers_active)] + [
         controller_spawner(controllers_inactive, active=False)
