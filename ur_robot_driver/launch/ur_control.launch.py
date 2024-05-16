@@ -268,6 +268,7 @@ def launch_setup(context, *args, **kwargs):
         executable="urscript_interface",
         parameters=[{"robot_ip": robot_ip}],
         output="screen",
+        condition=IfCondition('true' if hardware_type == "ros2" else 'false'),
     )
 
     controller_stopper_node = Node(
