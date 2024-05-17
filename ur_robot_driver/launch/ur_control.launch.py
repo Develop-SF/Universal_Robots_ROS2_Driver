@@ -325,15 +325,15 @@ def launch_setup(context, *args, **kwargs):
         )
     controllers_active = ["joint_state_broadcaster"]
     controllers_inactive = ["forward_position_controller"]
-    if hardware_type in ['ros2', 'fake']:
+    hw_type = LaunchConfiguration("hardware_type").perform(context)
+    if hw_type in ["ros2", "fake"]:
         controllers_active.append("io_and_status_controller")
-        controllers_active.append("speed_scaling_state_broadcaster")
         controllers_active.append("force_torque_sensor_broadcaster")
+        controllers_active.append("speed_scaling_state_broadcaster")
     else:
         controllers_inactive.append("io_and_status_controller")
         controllers_inactive.append("speed_scaling_state_broadcaster")
         controllers_inactive.append("force_torque_sensor_broadcaster")
-
     controller_spawners = [controller_spawner(controllers_active)] + [
         controller_spawner(controllers_inactive, active=False)
     ]
