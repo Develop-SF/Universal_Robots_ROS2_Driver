@@ -252,7 +252,22 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
     )
 
-    nodes_to_start = [move_group_node, rviz_node, servo_node]
+    teleop_cmd_publisher_node = Node(
+        package="ur_moveit_config",
+        executable="teleop_command_publisher",
+        output="log",
+        condition=IfCondition(launch_servo),
+    )
+
+    xbox_controller_node = Node(
+        package="joy",
+        executable="game_controller_node",
+        name="joy_node",
+        output="screen",
+        condition=IfCondition(launch_servo),
+    )
+
+    nodes_to_start = [move_group_node, rviz_node, servo_node, xbox_controller_node, teleop_cmd_publisher_node]
 
     return nodes_to_start
 
